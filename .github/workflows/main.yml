@@ -3,7 +3,7 @@ name: django container build/push dockerhub ci
 on:
   push:
     branches:
-      - "main"
+      - "master"
 
 jobs:
   build:
