@@ -25,6 +25,8 @@ graphs['g_counter'] = Counter('python_request_g_posts', 'The total number'\
   + ' of card gift posts.')
 graphs['u_counter'] = Counter('python_request_u_posts', 'The total number'\
   + ' of card use posts.')
+graphs['404_error_database'] = Counter('database_error_return_404', 'The total number'\
+  + ' of returned 404 error due to database error.')
 
 # Create your views here.
 # Landing page. Nav bar, most recently bought cards, etc.
