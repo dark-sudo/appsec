@@ -1,0 +1,57 @@
+## Prometheus monitoring writeup
+
+## Install prometheus using helm chart
+command:
+   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+   helm repo update
+   helm install prometheus prometheus-community/prometheus
+
+## Check if well installed
+command: helm list
+output: 
+   NAME            NAMESPACE       REVISION        UPDATED                                         STATUS          CHART                   APP VERSION
+   prometheus      default         1               2024-04-03 18:38:58.585793787 +0200 CEST        deployed        prometheus-25.19.0      v2.51.1
+
+## get all pod running to make sure prometheus running
+command: kubectl get pods
+output:
+   NAME                                                READY   STATUS    RESTARTS   AGE
+   assignment3-django-deploy-6c96dbd884-dprfr          1/1     Running   0          38s
+   mysql-container-fc8b55bd4-78rdp                     1/1     Running   0          5h2m
+   prometheus-alertmanager-0                           1/1     Running   0          10m
+   prometheus-kube-state-metrics-65468947fb-dv6sb      1/1     Running   0          10m
+   prometheus-prometheus-node-exporter-w4ksv           1/1     Running   0          10m
+   prometheus-prometheus-pushgateway-76976dc66-bjnq6   1/1     Running   0          10m
+   prometheus-server-5bb9fdbccb-7q2hj                  2/2     Running   0          10m
+   proxy-58b495d6cc-4zl5h                              1/1     Running   0          5h2d
+
+## After python file views.py changes
+## need to rebuild image then restart pod
+command: docker build -t nyuappsec/assign3:v0 . && kubectl delete pod assignment3-django-deploy-6c96dbd884-dprfr
+
+## deleting pod will restart it to comply to the configuration of the deployment replicas
+
+## Editing Prometheus configuration to add proxy-job
+command: kubectl edit configmap prometheus-server
+
+## Adding in scrape configs part the new job:
+## with targets proxy-service:8080 that display metrics since we use DNS
+output: 
+   scrape_configs:
+       - job_name: prometheus
+        static_configs:
+         - targets:
+           - localhost:9090
+       - job_name: proxy-job
+         static_configs:
+         - targets:
+           - proxy-service:8080
+
+## To access it we export the port first
+command: kubectl expose service prometheus-server --type=NodePort --target-port=9090 --name=prometheus-server-ext
+output: service/prometheus-server-ext exposed
+
+## Then to start the services
+command: minikube service prometheus-server-ext proxy-service
+## Grab url and go check in prometheus the graph after purposely enter wrong url like http://127.0.0.1:33703/gift/1029
+## Wrong gift Card ID.
