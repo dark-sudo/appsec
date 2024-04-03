@@ -28,4 +28,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/nyuappsec/assign3:v0
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/nyuappsec:django_v0
